@@ -1,9 +1,12 @@
 import './styles.css';
 import { ComparisonChart } from './components/ComparisonChart';
+import { SaveIndicator } from './components/SaveIndicator';
 import { ScenarioForm } from './components/ScenarioForm';
 import { ScenarioTable } from './components/ScenarioTable';
 import { formatMoney } from './domain';
 import { useMoneyScenario } from './useMoneyScenario';
+
+const saveShortcutHint = typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform) ? '⌘ S' : 'Ctrl S';
 
 export default function App() {
   const viewModel = useMoneyScenario();
@@ -16,7 +19,10 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <div className="brand"><div className="brand-mark">M</div><div><strong>MoneyScenario</strong><span>资金情景推演器</span></div></div>
-        <div className="topbar-actions"><span className="status-dot" />{state.message}<button className="save-button" type="button" onClick={() => void viewModel.save()}>保存比较 <span>⌘ S</span></button></div>
+        <div className="topbar-actions">
+          <SaveIndicator saveStatus={state.saveStatus} dirty={state.dirty} message={state.message} onRetry={() => void viewModel.retrySave()} />
+          <button className="save-button" type="button" onClick={() => void viewModel.save(true)} title={`保存比较（${saveShortcutHint === '⌘ S' ? '⌘' : 'Ctrl'}+S）`}>保存比较 <span>{saveShortcutHint}</span></button>
+        </div>
       </header>
       <div className="workspace">
         <aside className="sidebar">

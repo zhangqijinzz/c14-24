@@ -24,6 +24,11 @@ export async function writeLocalWorkspace(workspace: PersistedWorkspace): Promis
   localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace));
 }
 
+// Synchronous write: the only storage option available during page unload.
+export function writeLocalWorkspaceSync(workspace: PersistedWorkspace): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace));
+}
+
 export async function readIndexedWorkspace(): Promise<PersistedWorkspace | null> {
   if (typeof indexedDB === 'undefined') return null;
   return new Promise((resolve) => {

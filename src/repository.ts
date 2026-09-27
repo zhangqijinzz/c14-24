@@ -1,9 +1,11 @@
-import { readIndexedWorkspace, readLocalWorkspace, writeIndexedWorkspace, writeLocalWorkspace } from './storage';
+import { readIndexedWorkspace, readLocalWorkspace, writeIndexedWorkspace, writeLocalWorkspace, writeLocalWorkspaceSync } from './storage';
 import type { PersistedWorkspace } from './types';
 
 export interface ScenarioRepository {
   load(): Promise<PersistedWorkspace | null>;
   save(workspace: PersistedWorkspace): Promise<void>;
+  /** Synchronous best-effort write, used when the page is being closed. */
+  flush?(workspace: PersistedWorkspace): void;
 }
 
 export class LocalScenarioRepository implements ScenarioRepository {
@@ -24,5 +26,9 @@ export class LocalScenarioRepository implements ScenarioRepository {
     } catch (error) {
       if (!indexedSaved) throw error;
     }
+  }
+
+  flush(workspace: PersistedWorkspace): void {
+    writeLocalWorkspaceSync(workspace);
   }
 }
