@@ -14,18 +14,21 @@ const fields: Array<{ key: ScenarioField; suffix: string; step: string }> = [
 interface Props {
   scenario: FinanceScenario;
   errors: ValidationErrors;
+  dirty: boolean;
   onUpdate: (field: ScenarioField, value: number) => void;
   onRename: (name: string) => void;
   onDuplicate: () => void;
   onRemove: () => void;
+  onNumberFieldActiveChange: (active: boolean) => void;
 }
 
-export function ScenarioForm({ scenario, errors, onUpdate, onRename, onDuplicate, onRemove }: Props) {
+export function ScenarioForm({ scenario, errors, dirty, onUpdate, onRename, onDuplicate, onRemove, onNumberFieldActiveChange }: Props) {
   return (
     <section className="scenario-card" style={{ '--accent': scenario.color } as CSSProperties}>
       <div className="scenario-card__head">
         <span className="scenario-dot" />
         <input className="scenario-name" aria-label="情景名称" value={scenario.name} onChange={(event) => onRename(event.target.value)} />
+        {dirty && <span className="unsaved-badge" title="有未保存的改动">未保存</span>}
         <button className="icon-button" type="button" onClick={onDuplicate} title="复制情景" aria-label="复制情景">＋</button>
         <button className="icon-button muted" type="button" onClick={onRemove} title="删除情景" aria-label="删除情景">×</button>
       </div>
@@ -41,6 +44,8 @@ export function ScenarioForm({ scenario, errors, onUpdate, onRename, onDuplicate
                 max={key === 'years' ? 60 : undefined}
                 step={step}
                 value={Number.isNaN(scenario[key]) ? '' : scenario[key]}
+                onFocus={() => onNumberFieldActiveChange(true)}
+                onBlur={() => onNumberFieldActiveChange(false)}
                 onChange={(event) => onUpdate(key, event.target.value === '' ? Number.NaN : Number(event.target.value))}
               />
               <em>{suffix}</em>

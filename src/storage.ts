@@ -21,7 +21,16 @@ export async function readLocalWorkspace(): Promise<PersistedWorkspace | null> {
 }
 
 export async function writeLocalWorkspace(workspace: PersistedWorkspace): Promise<void> {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace));
+  writeLocalWorkspaceSync(workspace);
+}
+
+/** pagehide/beforeunload 等只允许同步操作的时机使用 */
+export function writeLocalWorkspaceSync(workspace: PersistedWorkspace): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace));
+  } catch {
+    // 隐私模式或配额超限时静默失败：本页内容仍在，下次可重试。
+  }
 }
 
 export async function readIndexedWorkspace(): Promise<PersistedWorkspace | null> {

@@ -1,5 +1,6 @@
 import './styles.css';
 import { ComparisonChart } from './components/ComparisonChart';
+import { SaveStatus } from './components/SaveStatus';
 import { ScenarioForm } from './components/ScenarioForm';
 import { ScenarioTable } from './components/ScenarioTable';
 import { formatMoney } from './domain';
@@ -12,11 +13,19 @@ export default function App() {
 
   if (state.status === 'loading') return <div className="loading-screen"><div className="brand-mark">M</div><p>正在准备你的情景工作台…</p></div>;
 
+  const saveShortcut = navigator.platform.toLowerCase().includes('mac') ? '⌘ S' : 'Ctrl S';
+  const saveLabel = state.saveState === 'saving' ? '保存中…' : state.saveState === 'error' ? '重试保存' : '保存比较';
+
   return (
     <main className="app-shell">
       <header className="topbar">
         <div className="brand"><div className="brand-mark">M</div><div><strong>MoneyScenario</strong><span>资金情景推演器</span></div></div>
-        <div className="topbar-actions"><span className="status-dot" />{state.message}<button className="save-button" type="button" onClick={() => void viewModel.save()}>保存比较 <span>⌘ S</span></button></div>
+        <div className="topbar-actions">
+          <SaveStatus saveState={state.saveState} message={state.message} lastSavedAt={state.lastSavedAt} onRetry={() => void viewModel.save(true)} />
+          <button className="save-button" type="button" disabled={state.saveState === 'saving'} onClick={() => void viewModel.save(true)}>
+            {saveLabel} <span>{saveShortcut}</span>
+          </button>
+        </div>
       </header>
       <div className="workspace">
         <aside className="sidebar">
@@ -29,7 +38,7 @@ export default function App() {
         <section className="content">
           <div className="section-heading"><div><span className="eyebrow">01 · SCENARIOS</span><h2>编辑资金情景</h2></div><button className="secondary-button" type="button" onClick={() => viewModel.addScenario()}>＋ 新增情景</button></div>
           <div className="scenario-list">
-            {state.scenarios.map((scenario) => <ScenarioForm key={scenario.id} scenario={scenario} errors={state.errors[scenario.id] ?? {}} onUpdate={(field, value) => viewModel.updateField(scenario.id, field, value)} onRename={(name) => viewModel.renameScenario(scenario.id, name)} onDuplicate={() => viewModel.duplicateScenario(scenario.id)} onRemove={() => viewModel.removeScenario(scenario.id)} />)}
+            {state.scenarios.map((scenario) => <ScenarioForm key={scenario.id} scenario={scenario} errors={state.errors[scenario.id] ?? {}} dirty={state.dirtyScenarioIds.includes(scenario.id)} onUpdate={(field, value) => viewModel.updateField(scenario.id, field, value)} onRename={(name) => viewModel.renameScenario(scenario.id, name)} onDuplicate={() => viewModel.duplicateScenario(scenario.id)} onRemove={() => viewModel.removeScenario(scenario.id)} onNumberFieldActiveChange={(active) => viewModel.setNumberFieldActive(active)} />)}
           </div>
 
           <div className="results-heading"><div><span className="eyebrow">02 · OUTCOME</span><h2>长期结果对比</h2></div><div className="result-highlight"><span>最高名义终值</span><strong>¥ {formatMoney(totalValue)}</strong></div></div>
